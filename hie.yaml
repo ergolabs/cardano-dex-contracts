@@ -2,3 +2,5 @@ cradle:
   cabal:
     - path: "./src"
       component: "cardano-dex-contracts:lib:cardano-dex-contracts"
+    - path: "./test"
+      component: "cardano-dex-contracts:test:cardano-dex-contracts-test"

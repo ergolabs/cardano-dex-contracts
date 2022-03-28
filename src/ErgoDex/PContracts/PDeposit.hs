@@ -20,9 +20,11 @@ import PExtra.Ada
 import Plutarch.Api.V1 (PPubKeyHash, PValue)
 import PExtra.Monadic  (tlet, tmatch, tletField)
 import PExtra.List     (pelemAt)
+import Plutarch.Lift
 
 import ErgoDex.PContracts.PApi   (getRewardValue', maxLqCap, pmin, tletUnwrap, containsSignature)
 import ErgoDex.PContracts.POrder (OrderRedeemer, OrderAction(Refund, Apply))
+import qualified ErgoDex.Contracts.Proxy.Deposit as D
 
 import qualified ErgoDex.Contracts.Proxy.Deposit as D
 
@@ -114,6 +116,7 @@ depositValidatorT = plam $ \conf' redeemer' ctx' -> unTermCont $ do
   minRewardByX <- tlet $ minAssetReward # selfValue # x # reservesX # liquidity # exFee # collateralAda
   minRewardByY <- tlet $ minAssetReward # selfValue # y # reservesY # liquidity # exFee # collateralAda
   let
+    actualReward = assetClassValueOf # rewardValue # lq
     validChange =
       pif (minRewardByX #== minRewardByY)
         (pcon PTrue)
@@ -121,11 +124,19 @@ depositValidatorT = plam $ \conf' redeemer' ctx' -> unTermCont $ do
           (validChange' # rewardValue # y # minRewardByY # minRewardByX # reservesY # liquidity)
           (validChange' # rewardValue # x # minRewardByX # minRewardByY # reservesX # liquidity))
     minReward   = pmin # minRewardByX # minRewardByY
-    validReward =
-      let actualReward = assetClassValueOf # rewardValue # lq
-      in minReward #<= actualReward
-
+    validReward = minReward #<= actualReward
+--      let actualReward = assetClassValueOf # rewardValue # lq
+--      in minReward #<= actualReward
+    actualRewardIs0 = actualReward #== 0
+    minRewardMoreThan10 = 10 #< minReward
   action <- tletUnwrap $ hrecField @"action" redeemer
+  _ <- tlet $ ptraceIfTrue  ("actualRewardIs0") actualRewardIs0
+  _ <- tlet $ ptraceIfTrue  ("minRewardMoreThan10") minRewardMoreThan10
+  _ <- tlet $ ptraceIfFalse "poolIdentity" poolIdentity
+  _ <- tlet $ ptraceIfFalse "selfIdentity" selfIdentity
+  _ <- tlet $ ptraceIfFalse "strictInputs" strictInputs
+  _ <- tlet $ ptraceIfFalse "validChange" validChange
+  _ <- tlet $ ptraceIfFalse "validReward" validReward
   pure $ pmatch action $ \case
     Apply  -> poolIdentity #&& selfIdentity #&& strictInputs #&& validChange #&& validReward
     Refund -> let sigs = pfromData $ hrecField @"signatories" txInfo

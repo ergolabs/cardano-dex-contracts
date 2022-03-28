@@ -42,7 +42,7 @@ pmin = phoistAcyclic $ plam $ \a b -> pif (a #<= b) a b
 containsSignature :: Term s (PBuiltinList (PAsData PPubKeyHash) :--> PPubKeyHash :--> PBool)
 containsSignature = phoistAcyclic $ plam $ \signatories userPubKeyHash -> pelem # pdata userPubKeyHash # signatories
 
--- Guarantees reward prposition correctness
+-- Guarantees reward preposition correctness
 getRewardValue' :: Term s (PAsData PTxOut :--> PPubKeyHash :--> PValue)
 getRewardValue' = phoistAcyclic $ plam $ \out pubkeyHash -> unTermCont $ do
   let addr = pfield @"address" # out
@@ -52,8 +52,8 @@ getRewardValue' = phoistAcyclic $ plam $ \out pubkeyHash -> unTermCont $ do
       let
         pkh   = pfield @"_0" # pcred
         value = pfield @"value" # out
-      in pif (pkh #== pubkeyHash) value (ptraceError "Invalid reward proposition")
-    _ -> ptraceError "Invalid reward proposition"
+      in pif (pkh #== pubkeyHash) value (ptraceError "Invalid pubkey hash")
+    PScriptCredential _ -> ptraceError ("Invalid reward credential proposition. Scriptcred")
 
 getInputValue :: Term s (PBuiltinList (PAsData PTxInInfo) :--> PInteger :--> PValue)
 getInputValue = phoistAcyclic $ plam $ \inputs index -> unTermCont $ do

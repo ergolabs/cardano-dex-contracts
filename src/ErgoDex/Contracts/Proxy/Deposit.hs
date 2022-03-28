@@ -38,6 +38,7 @@ import           ErgoDex.Contracts.Proxy.Order
 import           ErgoDex.Contracts.Pool           (PoolState(..), PoolConfig(..), getPoolInput, readPoolState, findPoolConfig)
 import qualified PlutusTx
 import           PlutusTx.Prelude
+import           Playground.Contract     (Generic)
 
 data DepositConfig = DepositConfig
    { poolNft       :: AssetClass
@@ -47,7 +48,7 @@ data DepositConfig = DepositConfig
    , exFee         :: Integer
    , rewardPkh     :: PubKeyHash
    , collateralAda :: Integer
-   } deriving stock (Haskell.Show)
+   } deriving stock (Haskell.Show, Generic)
 PlutusTx.makeIsDataIndexed ''DepositConfig [('DepositConfig, 0)]
 PlutusTx.makeLift ''DepositConfig
 

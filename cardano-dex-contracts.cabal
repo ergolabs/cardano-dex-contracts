@@ -20,6 +20,9 @@ maintainer:    ilya.arcadich@gmail.com
 -- copyright:
 -- category:
 -- extra-source-files: CHANGELOG.md
+flag development
+    default: True
+    manual: True
 
 flag defer-plugin-errors
     description:
@@ -145,3 +148,35 @@ library
       plutus-core,
       transformers
     hs-source-dirs: src
+
+test-suite cardano-dex-contracts-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  hs-source-dirs: test
+  other-modules:
+    Tests.Deposit.FailureDepositTests
+    Tests.Deposit.SuccessDepositTests
+    Tests.Deposit.SuccessfullDepositPoolTests
+    Tests.Deposit.FailureDepositPoolTests
+    Models.Generator
+    Models.Utils
+    Models.PGenerator
+    Eval
+    Matcher
+    Helper
+  build-depends:
+    , base  == 4.14.1.0
+    , HUnit == 1.6.2.0
+    , text  == 1.2.4.1
+    , base16-bytestring==1.0.1.0
+    , bytestring==0.10.12.0
+    , plutus-ledger-api==0.1.0.0
+    , random==1.2.1
+    , plutus-tx==0.1.0.0
+    , cardano-dex-contracts==0.1.0.0
+    , plutus-ledger-api
+    , plutus-ledger
+    , containers==0.6.2.1
+    , random-strings
+    , plutus-core
+    , plutarch
