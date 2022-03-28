@@ -9,6 +9,10 @@ import Plutarch.Prelude
 import PExtra.Monadic
 import Plutarch
 import Plutus.V1.Ledger.Scripts (ScriptError)
+import qualified Cardano.Binary          as CBOR
+import qualified Data.ByteString.Lazy as LBS
+import qualified Data.Text.Encoding      as T
+import qualified Data.ByteString.Base16  as Hex
 
 import qualified ErgoDex.Contracts.Pool as Pool
 import qualified ErgoDex.PContracts.PPool as PPool
@@ -71,19 +75,19 @@ runSuccessDeposit = do
     poolOutValue  = genValues [genValue nft 1, genValue x 20, genValue y 20, genValue lq 9223372036854775787, genAdaValue 3000000] mempty
     orderOutValue = genValues [genValue lq 10, genAdaValue 2482704] mempty 
 
-    poolInOut  = pgenPoolOut poolDH poolInValue pgenPoolValidator
+    poolInOut  = pgenPoolOut' poolDH poolInValue
     orderInOut = pgenPoolOut orderDH orderInValue pgenDepositValidator
     poolInIn   = pgenPoolIn genTxOutRef poolInOut
     orderInIn  = pgenPoolIn genTxOutRef orderInOut
 
-    poolOut  = pgenPoolOut poolDH poolOutValue pgenPoolValidator
-    orderOut = pgenOrderOut orderDH orderOutValue pubKeyHashReward
+    poolOut  = pgenPoolOut' poolDH poolOutValue
+    orderOut = pgenUserOut orderOutValue pubKeyHashReward
 
     txInfo  = pgenTxInfo poolInIn orderInIn poolOut orderOut
     purpose = pgenPurpose genTxOutRef
     cxt     = genContext txInfo purpose
 
-    orderRedeem  = genOrderRedeemer 0 1 1
+    orderRedeem  = genOrderRedeemer 0 1 0
     poolRedeem = genPoolRedeemer 0 Pool.Deposit
 
     cxtToData         = toData cxt
@@ -93,6 +97,11 @@ runSuccessDeposit = do
     poolRedeemToData = toData poolRedeem
     poolConfigToData = toData poolConfig
 
+    newDepositConfigDatumHex = (T.decodeUtf8 . Hex.encode $ (LBS.toStrict $ CBOR.serialize $ cxtToData))
+
     resOrder = evalWithArgs (wrapValidator PDeposit.depositValidatorT) [orderConfigToData, orderRedeemToData, cxtToData]
     resPool = evalWithArgs (wrapValidator PPool.poolValidatorT) [poolConfigToData, poolRedeemToData, cxtToData]
+  _ <- print $ "orderRedeemToData:" ++ (show orderRedeemToData)
+  _ <- print $ "orderConfigToData:" ++ (show orderConfigToData)
+  _ <- print $ "cxt:" ++ (show newDepositConfigDatumHex)
   return $ eraseRight resOrder

@@ -76,6 +76,14 @@ pgenPoolOut dh v vh =
     , txOutDatumHash = Just dh
     }
 
+pgenPoolOut' :: DatumHash -> Value -> TxOut
+pgenPoolOut' dh v =
+  TxOut
+    { txOutAddress   = PScripts.validatorAddress PScripts.poolValidator
+    , txOutValue     = v
+    , txOutDatumHash = Just dh
+    }
+
 pgenOrderOut :: DatumHash -> Value -> PubKeyHash -> TxOut
 pgenOrderOut dh v pkh =
   TxOut
@@ -84,11 +92,19 @@ pgenOrderOut dh v pkh =
     , txOutDatumHash = Just dh
     }
 
+pgenUserOut :: Value -> PubKeyHash -> TxOut
+pgenUserOut v pkh =
+  TxOut
+    { txOutAddress   = Address (PubKeyCredential pkh) Nothing
+    , txOutValue     = v
+    , txOutDatumHash = Nothing
+    }
+
 pgenTxInfo :: TxInInfo -> TxInInfo -> TxOut -> TxOut -> TxInfo
 pgenTxInfo pIn oIn pOut oOut =
   TxInfo
     { txInfoInputs = [pIn, oIn]
-    , txInfoOutputs = [pOut, oOut]
+    , txInfoOutputs = [oOut, pOut]
     , txInfoFee = mempty
     , txInfoMint = mempty
     , txInfoDCert = []
