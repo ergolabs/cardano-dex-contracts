@@ -116,6 +116,7 @@ library
       ErgoDex.PContracts.PSwap
       ErgoDex.PContracts.PRedeem
       ErgoDex.PContracts.PAssets
+      ErgoDex.PContracts.PStaking
       ErgoDex.PValidators
       ErgoDex.PMintingValidators
       PExtra.Ada

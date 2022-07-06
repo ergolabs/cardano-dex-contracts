@@ -1,6 +1,7 @@
 module ErgoDex.PContracts.PApi
  ( containsSignature
  , ownCurrencySymbol
+ , ownStakingCredential
  , getRewardValue'
  , tletUnwrap
  , pmin
@@ -17,7 +18,6 @@ module ErgoDex.PContracts.PApi
 
 import Plutarch
 import Plutarch.Api.V1
-import Plutarch.Api.V1.Address
 import Plutarch.Prelude
 
 import PExtra.List
@@ -50,7 +50,7 @@ pmin = phoistAcyclic $ plam $ \a b -> pif (a #<= b) a b
 containsSignature :: Term s (PBuiltinList (PAsData PPubKeyHash) :--> PPubKeyHash :--> PBool)
 containsSignature = phoistAcyclic $ plam $ \signatories userPubKeyHash -> pelem # pdata userPubKeyHash # signatories
 
--- Guarantees reward proposition correctness
+-- Guarantees correctness of reward proposition
 getRewardValue' :: Term s (PAsData PTxOut :--> PPubKeyHash :--> PMaybeData PPubKeyHash :--> PValue)
 getRewardValue' = phoistAcyclic $ plam $ \out pubkeyHash stakePkhM -> unTermCont $ do
   let addr  = pfield @"address" # out
@@ -108,5 +108,12 @@ ownCurrencySymbol :: Term s (PScriptContext :--> PCurrencySymbol)
 ownCurrencySymbol = phoistAcyclic $
   plam $ \sc -> unTermCont $ do
     PScriptContext te <- tmatch sc
-    PMinting cs' <- tmatchField @"purpose" te
+    PMinting cs'      <- tmatchField @"purpose" te
     pure $ pfield @"_0" # cs'
+
+ownStakingCredential :: Term s (PScriptContext :--> PStakingCredential)
+ownStakingCredential = phoistAcyclic $
+  plam $ \sc -> unTermCont $ do
+    PScriptContext te <- tmatch sc
+    PRewarding cr'    <- tmatchField @"purpose" te
+    pure $ pfield @"_0" # cr'

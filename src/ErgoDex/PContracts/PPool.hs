@@ -5,6 +5,7 @@ module ErgoDex.PContracts.PPool
   , PoolAction(..)
   , PoolRedeemer(..)
   , poolValidatorT
+  , findPoolOutput
   ) where
 
 import qualified GHC.Generics as GHC
@@ -49,7 +50,7 @@ newtype PoolConfig (s :: S) = PoolConfig
 instance PUnsafeLiftDecl PoolConfig where type PLifted PoolConfig = P.PoolConfig
 deriving via (DerivePConstantViaData P.PoolConfig PoolConfig) instance (PConstant P.PoolConfig)
 
-data PoolAction (s :: S) = Deposit | Redeem | Swap | Destroy
+data PoolAction (s :: S) = Deposit | Redeem | Swap | RewardWdrl | Destroy
 
 instance PIsData PoolAction where
   pfromData tx =
@@ -60,15 +61,17 @@ instance PIsData PoolAction where
 instance PlutusType PoolAction where
   type PInner PoolAction _ = PInteger
 
-  pcon' Deposit = 0
-  pcon' Redeem = 1
-  pcon' Swap = 2
-  pcon' Destroy = 3
+  pcon' Deposit    = 0
+  pcon' Redeem     = 1
+  pcon' Swap       = 2
+  pcon' RewardWdrl = 3
+  pcon' Destroy    = 4
 
   pmatch' x f =
     pif (x #== 0) (f Deposit)
       (pif (x #== 1) (f Redeem)
-        (pif (x #== 2) (f Swap) (f Destroy)))
+        (pif (x #== 2) (f Swap)
+          (pif (x #== 3) (f RewardWdrl) (f Destroy))))
 
 newtype PoolRedeemer (s :: S) = PoolRedeemer
   (
@@ -222,7 +225,8 @@ poolValidatorT = plam $ \conf redeemer' ctx' -> unTermCont $ do
 
       let
         validAction = pmatch action $ \case
-          Swap -> dlq #== 0 #&& validSwap # conf # s0 # dx # dy
-          _    -> validDepositRedeem # s0 # dx # dy # dlq
+          Swap       -> dlq #== 0 #&& validSwap # conf # s0 # dx # dy
+          RewardWdrl -> dlq #== 0 #&& 0 #<= dx #&& 0 #<= dy
+          _          -> validDepositRedeem # s0 # dx # dy # dlq
 
       pure $ selfIdentity #&& confPreserved #&& scriptPreserved #&& validAction

@@ -63,7 +63,7 @@ data PoolConfig = PoolConfig
 PlutusTx.makeIsDataIndexed ''PoolConfig [('PoolConfig, 0)]
 PlutusTx.makeLift ''PoolConfig
 
-data PoolAction = Deposit | Redeem | Swap | Destroy
+data PoolAction = Deposit | Redeem | Swap | RewardWdrl | Destroy
   deriving Haskell.Show
 PlutusTx.makeLift ''PoolAction
 
@@ -75,7 +75,8 @@ instance FromData PoolAction where
         | i == 0    = Just Deposit
         | i == 1    = Just Redeem
         | i == 2    = Just Swap
-        | i == 3    = Just Destroy
+        | i == 3    = Just RewardWdrl
+        | i == 4    = Just Destroy
         | otherwise = Nothing
 
 instance UnsafeFromData PoolAction where
@@ -85,10 +86,11 @@ instance UnsafeFromData PoolAction where
 instance ToData PoolAction where
   {-# INLINE toBuiltinData #-}
   toBuiltinData a = mkI $ case a of
-    Deposit -> 0
-    Redeem  -> 1
-    Swap    -> 2
-    Destroy -> 3
+    Deposit    -> 0
+    Redeem     -> 1
+    Swap       -> 2
+    RewardWdrl -> 3
+    Destroy    -> 4
 
 data PoolRedeemer = PoolRedeemer
   { action :: PoolAction
