@@ -11,7 +11,8 @@ import Plutarch.Api.V1.Contexts (PScriptContext)
 import Plutarch.Unsafe          (punsafeCoerce)
 
 import qualified ErgoDex.PContracts.PAssets as A
-import Ledger
+import Plutus.V1.Ledger.Contexts
+import Plutus.V1.Ledger.Api (TokenName, MintingPolicy)
 
 wrapMintingValidator
   :: PIsData rdmr

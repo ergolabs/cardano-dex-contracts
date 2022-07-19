@@ -8,20 +8,11 @@
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE KindSignatures             #-}
-{-# LANGUAGE MonoLocalBinds             #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE NoImplicitPrelude          #-}
 {-# LANGUAGE PartialTypeSignatures      #-}
-{-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE ScopedTypeVariables        #-}
-{-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE TypeApplications           #-}
 {-# LANGUAGE TypeFamilies               #-}
-{-# LANGUAGE TypeOperators              #-}
-{-# LANGUAGE TypeSynonymInstances       #-}
-{-# LANGUAGE ViewPatterns               #-}
-{-# LANGUAGE NamedFieldPuns             #-}
 {-# OPTIONS_GHC -Wno-simplifiable-class-constraints #-}
 {-# OPTIONS_GHC -fno-strictness #-}
 {-# OPTIONS_GHC -fno-specialise #-}
@@ -31,10 +22,8 @@ module ErgoDex.Contracts.Types where
 
 import GHC.Generics (Generic)
 import Data.Aeson   (FromJSON, ToJSON)
-import Schema       (ToSchema)
 
-import           Ledger
-import           Ledger.Value        (AssetClass (..), assetClassValue, assetClassValueOf)
+import           Plutus.V1.Ledger.Value        (AssetClass (..), assetClassValue, assetClassValueOf, Value(..))
 import qualified PlutusTx
 import           PlutusTx.Prelude
 import qualified Prelude             as Haskell
@@ -64,7 +53,7 @@ data Base = Base deriving (Haskell.Show, Haskell.Eq, Generic)
 -- Type to distinguish tokens within a pool
 newtype Coin a = Coin { unCoin :: AssetClass }
   deriving stock   (Haskell.Show, Generic)
-  deriving newtype (ToJSON, FromJSON, ToSchema, Eq, Haskell.Eq, Haskell.Ord)
+  deriving newtype (ToJSON, FromJSON, Eq, Haskell.Eq, Haskell.Ord)
   deriving newtype (PlutusTx.ToData, PlutusTx.FromData, PlutusTx.UnsafeFromData)
 
 {-# INLINABLE retagCoin #-}
@@ -78,7 +67,7 @@ valueOf v = assetClassValueOf v . unCoin
 -- Difference of a token amount
 newtype Diff a = Diff { unDiff :: Integer }
   deriving stock   (Haskell.Show, Generic)
-  deriving newtype (ToJSON, FromJSON, ToSchema, Eq, Ord, PrintfArg)
+  deriving newtype (ToJSON, FromJSON, Eq, Ord, PrintfArg)
   deriving newtype (Haskell.Eq, Haskell.Ord, Haskell.Num)
   deriving newtype (AdditiveGroup, AdditiveMonoid, AdditiveSemigroup, MultiplicativeSemigroup)
   deriving newtype (PlutusTx.ToData, PlutusTx.FromData, PlutusTx.UnsafeFromData)
@@ -86,7 +75,7 @@ newtype Diff a = Diff { unDiff :: Integer }
 -- Amount of a token
 newtype Amount a = Amount { unAmount :: Integer }
   deriving stock   (Haskell.Show, Generic)
-  deriving newtype (ToJSON, FromJSON, ToSchema, Eq, Ord, PrintfArg)
+  deriving newtype (ToJSON, FromJSON, Eq, Ord, PrintfArg)
   deriving newtype (Haskell.Eq, Haskell.Ord, Haskell.Num)
   deriving newtype (AdditiveGroup, AdditiveMonoid, AdditiveSemigroup, MultiplicativeSemigroup)
   deriving newtype (PlutusTx.ToData, PlutusTx.FromData, PlutusTx.UnsafeFromData)

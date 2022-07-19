@@ -8,8 +8,6 @@
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE KindSignatures             #-}
-{-# LANGUAGE MonoLocalBinds             #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE NoImplicitPrelude          #-}
 {-# LANGUAGE PartialTypeSignatures      #-}
@@ -19,7 +17,6 @@
 {-# LANGUAGE TypeApplications           #-}
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE TypeOperators              #-}
-{-# LANGUAGE TypeSynonymInstances       #-}
 {-# LANGUAGE ViewPatterns               #-}
 {-# LANGUAGE NamedFieldPuns             #-}
 {-# OPTIONS_GHC -Wno-simplifiable-class-constraints #-}
@@ -31,13 +28,11 @@ module ErgoDex.Contracts.Proxy.Order
   ( OrderRedeemer(..)
   , OrderAction(..)
   , isAda
-  , findOrderInput
-  , findRewardInput
   ) where
 
 import qualified Prelude as Haskell
 
-import           Ledger
+import           Plutus.V1.Ledger.Value
 import           PlutusTx.Prelude
 import           PlutusTx.Builtins
 import           PlutusTx.IsData.Class
@@ -80,13 +75,3 @@ PlutusTx.makeLift ''OrderRedeemer
 {-# INLINABLE isAda #-}
 isAda :: AssetClass -> Bool
 isAda cls = cls == adaAssetClass
-
-{-# INLINABLE findOrderInput #-}
-findOrderInput :: ScriptContext -> TxOut
-findOrderInput ctx = txInInfoResolved $ fromMaybe (error ()) (findOwnInput ctx)
-
-{-# INLINABLE findRewardInput #-}
-findRewardInput :: ScriptContext -> PubKeyHash -> TxOut
-findRewardInput ScriptContext{scriptContextTxInfo=TxInfo{txInfoInputs}} pkh =
-  txInInfoResolved $ fromMaybe (error ()) (find isReward txInfoInputs)
-    where isReward TxInInfo{txInInfoResolved} = maybe False (== pkh) (pubKeyOutput txInInfoResolved)

@@ -95,19 +95,14 @@ library
     import: lang
     exposed-modules:
       ErgoDex.Plutus
-      ErgoDex.Contracts.OffChain
       ErgoDex.Contracts.Types
       ErgoDex.Contracts.Pool
       ErgoDex.Contracts.Class
       ErgoDex.Contracts.Typed
-      ErgoDex.Contracts.Proxy.OffChain
       ErgoDex.Contracts.Proxy.Order
       ErgoDex.Contracts.Proxy.Swap
       ErgoDex.Contracts.Proxy.Deposit
       ErgoDex.Contracts.Proxy.Redeem
-      ErgoDex.Contracts.Proxy.Typed.Swap
-      ErgoDex.Contracts.Proxy.Typed.Deposit
-      ErgoDex.Contracts.Proxy.Typed.Redeem
       ErgoDex.PContracts.PApi
       ErgoDex.PContracts.POrder
       ErgoDex.PContracts.PPool
@@ -134,12 +129,8 @@ library
       aeson,
       bytestring,
       containers,
-      freer-extras,
-      playground-common,
-      plutus-contract,
       plutus-tx-plugin,
       plutus-tx,
-      plutus-ledger,
       plutus-ledger-api,
       plutarch==1.1.0,
       generics-sop==0.5.1.0,
@@ -174,8 +165,6 @@ test-suite cardano-dex-contracts-test
     , random==1.2.1
     , plutus-tx==0.1.0.0
     , cardano-dex-contracts==0.1.0.0
-    , plutus-ledger-api
-    , plutus-ledger
     , containers==0.6.2.1
     , random-strings
     , plutus-core

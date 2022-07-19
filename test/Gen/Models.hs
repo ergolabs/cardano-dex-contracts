@@ -46,15 +46,18 @@ import qualified Data.ByteString as BS
 import Plutus.V1.Ledger.Api
 import Plutus.V1.Ledger.Value    as Value
 import PlutusTx.Builtins.Internal
-import qualified Ledger.Ada      as Ada
-import qualified Ledger as Ledger
-import qualified Ledger.Typed.Scripts.Validators as LV
+import qualified Plutus.V1.Ledger.Ada      as Ada
+import qualified Plutus.V1.Ledger.Api as Ledger
+import Plutus.V1.Ledger.Contexts
+import Plutarch.Api.V1 ( validatorHash )
 import qualified Plutus.V1.Ledger.Interval as Interval
 
 import qualified ErgoDex.PValidators             as PScripts
 import qualified ErgoDex.Contracts.Pool          as P
 import qualified ErgoDex.Contracts.Proxy.Deposit as D
 import qualified ErgoDex.Contracts.Proxy.Order   as O
+import Plutus.V1.Ledger.Tx (TxInType (ConsumeScriptAddress))
+import PlutusTx.Builtins as Builtins
 
 genBuiltinByteString :: MonadGen f => Int -> f BuiltinByteString
 genBuiltinByteString s = bytes (Range.singleton s) <&> BuiltinByteString
@@ -124,29 +127,32 @@ mkRedeemer = Redeemer . toBuiltinData
 mkDatum :: ToData a => a -> Datum
 mkDatum = Datum . toBuiltinData
 
+dataHash :: Builtins.BuiltinData -> Builtins.BuiltinByteString
+dataHash = undefined 
+
 mkDatumHash :: Datum -> DatumHash
-mkDatumHash = Ledger.datumHash
+mkDatumHash = DatumHash . dataHash . getDatum
 
 mkMaxLq :: Integer
 mkMaxLq = 0x7fffffffffffffff
 
-mkTxInType :: Datum -> Redeemer -> Ledger.TxInType
-mkTxInType datum redeemer = Ledger.ConsumeScriptAddress PScripts.poolValidator redeemer datum 
+mkTxInType :: Datum -> Redeemer -> TxInType
+mkTxInType datum redeemer = ConsumeScriptAddress PScripts.poolValidator redeemer datum 
 
 mkScriptCredential :: Credential
-mkScriptCredential = ScriptCredential $ LV.validatorHash $ LV.unsafeMkTypedValidator $ PScripts.poolValidator
+mkScriptCredential = ScriptCredential $ validatorHash PScripts.poolValidator
 
 genPkh :: MonadGen f => f PubKeyHash
 genPkh = genBuiltinByteString 28 <&> PubKeyHash
 
 mkDepositValidator :: ValidatorHash
-mkDepositValidator = LV.validatorHash $ LV.unsafeMkTypedValidator $ PScripts.depositValidator
+mkDepositValidator = validatorHash PScripts.depositValidator
 
 mkPoolValidator :: ValidatorHash
-mkPoolValidator = LV.validatorHash $ LV.unsafeMkTypedValidator $ PScripts.poolValidator
+mkPoolValidator = validatorHash PScripts.poolValidator
 
 mkSwapValidator :: ValidatorHash
-mkSwapValidator = LV.validatorHash $ LV.unsafeMkTypedValidator $ PScripts.swapValidator
+mkSwapValidator = validatorHash PScripts.swapValidator
 
 mkTxOut :: DatumHash -> Value -> ValidatorHash -> TxOut
 mkTxOut dh v vh =

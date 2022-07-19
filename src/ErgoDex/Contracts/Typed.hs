@@ -7,11 +7,12 @@ module ErgoDex.Contracts.Typed where
 
 import qualified Prelude as Haskell
 
-import           Playground.Contract     (FromJSON, Generic, ToJSON, ToSchema)
+import           Data.Aeson              (FromJSON, ToJSON)
 import           ErgoDex.Contracts.Types
 import           ErgoDex.Contracts.Class
 import qualified ErgoDex.Contracts.Pool as P
 import           PlutusTx.Prelude
+import GHC.Generics (Generic)
 
 data PoolConfig = PoolConfig
   { poolNft    :: Coin Nft
@@ -19,7 +20,7 @@ data PoolConfig = PoolConfig
   , poolY      :: Coin Y
   , poolLq     :: Coin Liquidity
   , poolFeeNum :: Integer
-  } deriving (Haskell.Show, Haskell.Eq, Generic, ToJSON, FromJSON, ToSchema)
+  } deriving (Haskell.Show, Haskell.Eq, Generic, ToJSON, FromJSON)
 
 instance UnliftErased PoolConfig P.PoolConfig where
   lift PoolConfig{..} = P.PoolConfig

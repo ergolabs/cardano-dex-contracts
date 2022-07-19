@@ -7,7 +7,7 @@ module ErgoDex.PValidators
   , wrapValidator
   ) where
 
-import Plutus.V1.Ledger.Api (Validator, Address)
+import Plutus.V1.Ledger.Api (Validator (getValidator), Address)
 
 import qualified ErgoDex.PContracts.PPool    as PP
 import qualified ErgoDex.PContracts.PSwap    as PS
@@ -16,12 +16,11 @@ import qualified ErgoDex.PContracts.PRedeem  as PR
 
 import Plutarch
 import Plutarch.Prelude
-import Plutarch.Api.V1          (mkValidator)
+import Plutarch.Api.V1          (mkValidator, validatorHash)
 import Plutarch.Api.V1.Contexts (PScriptContext)
 import Plutarch.Unsafe          (punsafeCoerce)
 
-import Ledger.Address (scriptHashAddress)
-import Ledger.Scripts (validatorHash)
+import Plutus.V1.Ledger.Address (scriptHashAddress)
 
 wrapValidator
   :: (PIsData dt, PIsData rdmr)

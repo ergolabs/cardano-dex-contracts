@@ -8,8 +8,6 @@
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE KindSignatures             #-}
-{-# LANGUAGE MonoLocalBinds             #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE NoImplicitPrelude          #-}
 {-# LANGUAGE PartialTypeSignatures      #-}
@@ -19,7 +17,6 @@
 {-# LANGUAGE TypeApplications           #-}
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE TypeOperators              #-}
-{-# LANGUAGE TypeSynonymInstances       #-}
 {-# LANGUAGE ViewPatterns               #-}
 {-# LANGUAGE NamedFieldPuns             #-}
 {-# OPTIONS_GHC -Wno-simplifiable-class-constraints #-}
@@ -43,14 +40,15 @@ module ErgoDex.Contracts.Pool
 
 import qualified Prelude as Haskell
 
-import           Ledger
-import           Ledger.Value            (flattenValue, assetClassValueOf)
-import           Playground.Contract     (FromJSON, Generic, ToJSON, ToSchema)
+import           Plutus.V1.Ledger.Value    (flattenValue, assetClassValueOf, AssetClass)
+import           Plutus.V1.Ledger.Api
 import           ErgoDex.Contracts.Types
 import qualified PlutusTx
 import           PlutusTx.Prelude
-import           PlutusTx.IsData.Class
 import           PlutusTx.Builtins
+import qualified GHC.Generics as Haskell
+import Plutus.V1.Ledger.Contexts (getContinuingOutputs, findOwnInput, findDatum)
+import Plutus.V1.Ledger.Tx (txOutDatum)
 
 -- Unwrapped representation of PoolConfig
 data PoolConfig = PoolConfig
@@ -59,7 +57,7 @@ data PoolConfig = PoolConfig
   , poolY      :: AssetClass
   , poolLq     :: AssetClass
   , poolFeeNum :: Integer
-  } deriving (Haskell.Show, Eq, Generic, ToJSON, FromJSON, ToSchema)
+  } deriving (Haskell.Show, Eq)
 PlutusTx.makeIsDataIndexed ''PoolConfig [('PoolConfig, 0)]
 PlutusTx.makeLift ''PoolConfig
 
@@ -94,7 +92,7 @@ data PoolRedeemer = PoolRedeemer
   { action :: PoolAction
   , selfIx :: Integer
   }
- deriving (Haskell.Show, Eq, Generic)
+ deriving (Haskell.Show, Eq, Haskell.Generic)
 PlutusTx.makeIsDataIndexed ''PoolRedeemer [('PoolRedeemer, 0)]
 PlutusTx.makeLift ''PoolRedeemer
 
